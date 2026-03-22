@@ -26,6 +26,16 @@ class ItemCreate(BaseModel):
     class Config:
        extra = "allow"
 
+    """
+    The above class config was a part of older fastapi implementation
+    Now, we use model config and we have to import - from pydantic import BaseModel, ConfigDict
+
+    class ItemCreate(BaseModel):    
+        name: str
+        price: int
+        model_config = ConfigDict(extra="allow")
+    """
+
 class ItemResponse(BaseModel):
     name: str
     price: int
