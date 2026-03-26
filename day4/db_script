@@ -1,0 +1,17 @@
+//Create Table in the PostgreSQL
+
+CREATE TABLE items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    price INTEGER
+);
+
+// Insert Data
+
+INSERT INTO items (name, price) VALUES
+('iPhone', 140000),
+('Samsung', 150000);
+
+// Check Data
+
+SELECT * FROM items;
