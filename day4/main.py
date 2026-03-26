@@ -3,8 +3,7 @@ from routes import items
 from exceptions.items import ItemNotFoundException, ItemAlreadyExistsException
 from fastapi.responses import JSONResponse
 """
-I can import the items like this as well - from day3.routes import items
-But in that case I have to run app like uvicorn day3.main:app --reload not uvicorn main:app --reload
+Day 4: Built full CRUD APIs (GET, POST, PUT, DELETE)
 """
 
 app = FastAPI()

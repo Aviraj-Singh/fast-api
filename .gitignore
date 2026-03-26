@@ -13,7 +13,9 @@ __pycache__/
 .env
 config.py
 day3/.env
+day4/.env
 day3/config.py
+day4/config.py
 
 # IDE files
 .vscode/
