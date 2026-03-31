@@ -1,0 +1,9 @@
+INSERT INTO users (name) VALUES ('Aviraj');
+
+SELECT * FROM users;
+
+INSERT INTO items (name, price, user_id) VALUES
+('iPhone', 140000, 1),
+('Samsung', 150000, 1);
+
+SELECT * FROM items;
