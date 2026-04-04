@@ -11,6 +11,12 @@ class UserAlreadyExistsException(Exception):
         self.user_name = user_name
 
 class UserNotFoundException(Exception):
-    def __init__(self, user_id: int):
-        self.user_id = user_id
+    def __init__(self, user_name: str):
+        self.user_id = user_name
+
+class InvalidUserException(Exception):
+    pass
+
+class InvalidCredentialsException(Exception):
+    pass
 
