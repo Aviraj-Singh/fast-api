@@ -3,6 +3,7 @@ from models.base import Base
 from dependencies.database import engine
 from models.user import User
 from models.items import Item
+from models.refresh_token import RefreshToken
 from routes import users
 from exceptions.exceptions import (ItemNotFoundException, ItemAlreadyExistsException,
                                    UserAlreadyExistsException, InvalidUserException, InvalidCredentialsException)

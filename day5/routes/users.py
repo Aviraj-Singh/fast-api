@@ -1,10 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from dependencies.database import get_db
+from fastapi.params import Body
 from models.schemas import UserCreate, UserLogin, ItemCreate, UserResponse, Token
 from models.user import User
 from models.items import Item
-from exceptions.exceptions import UserAlreadyExistsException, ItemAlreadyExistsException, InvalidUserException
+from models.refresh_token import RefreshToken
+from exceptions.exceptions import (UserAlreadyExistsException, ItemAlreadyExistsException,
+                                   InvalidUserException, InvalidCredentialsException, UserNotFoundException)
 from utils.security import hash_password, verify_password, create_access_token, get_current_user
+import secrets
+from datetime import datetime, timezone, timedelta
 
 router = APIRouter(
     prefix="/users",
@@ -34,12 +39,93 @@ def create_user(user: UserCreate, db = Depends(get_db)):
 def login_user(user: UserLogin, db = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user.email).first()
     if not existing_user:
-        raise InvalidUserException()
+        raise InvalidCredentialsException()
     is_valid = verify_password(user.password, existing_user.hashed_password)
     if not is_valid:
-        raise InvalidUserException()
+        raise InvalidCredentialsException()
     access_token = create_access_token(data={"sub": str(existing_user.id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    token_id = secrets.token_urlsafe(8)
+    secret = secrets.token_urlsafe(32)
+    refresh_token = f"{token_id}.{secret}"
+    hashed_refresh_token = hash_password(secret)
+    expires = datetime.now(timezone.utc) + timedelta(days=7)
+    db_refresh_token = RefreshToken(
+        id=token_id,
+        user_id=existing_user.id,
+        hashed_token=hashed_refresh_token,
+        expires_at=expires
+    )
+    db.add(db_refresh_token)
+    db.commit()
+    db.refresh(db_refresh_token)
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
+@router.post("/refresh", response_model=Token)
+def refresh_access_token(refresh_token: str = Body(..., embed=True), db=Depends(get_db)):
+    try:
+        token_id, secret = refresh_token.split(".")
+    except ValueError:
+        raise InvalidCredentialsException()
+
+    db_token = db.query(RefreshToken).filter(RefreshToken.id == token_id).first()
+    if not db_token:
+        raise InvalidCredentialsException()
+
+    if not verify_password(secret, db_token.hashed_token):
+        raise InvalidCredentialsException()
+
+    if db_token.expires_at < datetime.now(timezone.utc):
+        db.delete(db_token)
+        db.commit()
+        raise InvalidCredentialsException()
+
+    user = db.query(User).filter(User.id == db_token.user_id).first()
+    if not user:
+        raise InvalidCredentialsException()
+
+    # rotate
+    db.delete(db_token)
+    db.commit()
+
+    new_access_token = create_access_token(data={"sub": str(user.id)})
+
+    new_token_id = secrets.token_urlsafe(8)
+    new_secret = secrets.token_urlsafe(32)
+    new_refresh_token = f"{new_token_id}.{new_secret}"
+
+    new_hashed_token = hash_password(new_secret)
+    new_expires = datetime.now(timezone.utc) + timedelta(days=7)
+
+    new_db_token = RefreshToken(
+        id=new_token_id,
+        user_id=user.id,
+        hashed_token=new_hashed_token,
+        expires_at=new_expires
+    )
+
+    db.add(new_db_token)
+    db.commit()
+
+    return {"access_token": new_access_token, "refresh_token": new_refresh_token, "token_type": "bearer"}
+
+@router.post("/logout")
+def logout(refresh_token: str = Body(..., embed=True), db=Depends(get_db)):
+    try:
+        token_id, secret = refresh_token.split(".")
+    except ValueError:
+        raise InvalidCredentialsException()
+
+    db_token = db.query(RefreshToken).filter(RefreshToken.id == token_id).first()
+    if not db_token:
+        raise InvalidCredentialsException()
+
+    if not verify_password(secret, db_token.hashed_token):
+        raise InvalidCredentialsException()
+
+    db.delete(db_token)
+    db.commit()
+
+    return {"message": "Logged out successfully"}
 
 @router.get("/{user_id}/items")
 def get_user_items(user_id: int, db = Depends(get_db)):
