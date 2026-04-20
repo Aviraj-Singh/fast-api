@@ -13,7 +13,7 @@ Base.metadata.create_all(bind=engine)
 app.include_router(users.router)
 
 @app.exception_handler(InvalidUserException)
-def invalid_credentials_handler(request):
+def invalid_credentials_handler(request, exc: InvalidUserException):
     return JSONResponse(
         status_code=401,
         content={
@@ -22,7 +22,7 @@ def invalid_credentials_handler(request):
     )
 
 @app.exception_handler(InvalidCredentialsException)
-def item_already_exists_handler(request):
+def item_already_exists_handler(request, exc: InvalidCredentialsException):
     return JSONResponse(
         status_code=401,
         content={
