@@ -7,7 +7,7 @@ from models.items import Item
 from models.refresh_token import RefreshToken
 from exceptions.exceptions import (UserAlreadyExistsException, ItemAlreadyExistsException,
                                    InvalidUserException, InvalidCredentialsException, UserNotFoundException)
-from utils.security import hash_password, verify_password, create_access_token, get_current_user
+from utils.security import hash_password, verify_password, create_access_token, get_current_user, require_role
 import secrets
 from datetime import datetime, timezone, timedelta
 
@@ -153,7 +153,7 @@ def create_item_for_user(user_id: int, item: ItemCreate, db = Depends(get_db)):
     return db_item
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db = Depends(get_db)):
+def delete_user(user_id: int, db = Depends(get_db), current_admin: User = Depends(require_role("admin"))):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise UserNotFoundException(user_id)

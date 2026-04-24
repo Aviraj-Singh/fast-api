@@ -7,5 +7,6 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    role = Column(String, default="user")
     items = relationship("Item", back_populates="owner", cascade="all, delete")
     refresh_tokens = relationship("RefreshToken", cascade="all, delete")

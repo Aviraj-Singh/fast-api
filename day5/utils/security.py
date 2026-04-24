@@ -3,7 +3,7 @@ import bcrypt
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from config import SECRET_KEY, ALGORITHM, EXPIRY_MINUTES
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
 from fastapi.security import OAuth2PasswordBearer
@@ -11,6 +11,11 @@ from exceptions.exceptions import InvalidCredentialsException
 from models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+ROLE_HIERARCHY = {
+    "user": 1,
+    "manager": 2,
+    "admin": 3
+}
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(
@@ -46,3 +51,20 @@ def get_current_user(
     if user is None:
         raise InvalidCredentialsException()
     return user
+
+def require_role(required_role: str):
+    def role_checker(current_user: User = Depends(get_current_user)):
+        user_role = current_user.role.lower()
+        required = required_role.lower()
+        if user_role not in ROLE_HIERARCHY or required not in ROLE_HIERARCHY:
+            raise HTTPException(
+                status_code=500,
+                detail="Internal authorization configuration error"
+            )
+        if ROLE_HIERARCHY[user_role] < ROLE_HIERARCHY[required]:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized"
+            )
+        return current_user
+    return role_checker
