@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from dependencies.database import get_db
 from fastapi.params import Body
 from models.schemas import UserCreate, UserLogin, ItemCreate, UserResponse, Token

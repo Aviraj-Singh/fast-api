@@ -9,7 +9,8 @@ from exceptions.exceptions import (ItemNotFoundException, ItemAlreadyExistsExcep
                                    UserAlreadyExistsException, InvalidUserException, InvalidCredentialsException)
 from fastapi.responses import JSONResponse
 app = FastAPI()
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
+# Commenting because Alembic should create schema now, not app startup.
 app.include_router(users.router)
 
 @app.exception_handler(InvalidUserException)

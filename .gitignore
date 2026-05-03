@@ -1,30 +1,112 @@
-# Virtual environment
+# ---------------------------------------------------------------
+# Virtual environments
+# ---------------------------------------------------------------
 testEnv/
 venv/
 env/
+.venv/
+ENV/
 
-# Python cache
+# ---------------------------------------------------------------
+# Python cache / build artifacts
+# ---------------------------------------------------------------
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
 
-# Environment variables
+# ---------------------------------------------------------------
+# Environment variables & secrets
+# (catches .env / config.py at the project root and in ANY subfolder
+# such as day3/, day4/, day5/, etc.)
+# ---------------------------------------------------------------
 .env
+.env.*
+!.env.example
+**/.env
+**/.env.*
 config.py
-day3/.env
-day4/.env
-day5/.env
-day3/config.py
-day4/config.py
-day5/config.py
+**/config.py
+secrets.json
+**/secrets.json
+*.pem
+*.key
 
-# IDE files
+# ---------------------------------------------------------------
+# Alembic
+# (keep the alembic/ folder and versions/ tracked, but ignore
+# any local credential or override files alembic generates)
+# ---------------------------------------------------------------
+# Local override of alembic.ini (commit the main alembic.ini, not local copies)
+alembic.local.ini
+**/alembic.local.ini
+# If you ever generate SQL dumps from alembic migrations
+**/alembic/sql/
+
+# ---------------------------------------------------------------
+# Databases (local SQLite / dumps from migrations)
+# ---------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sql.bak
+**/*.db
+**/*.sqlite3
+
+# ---------------------------------------------------------------
+# IDE / editor files
+# ---------------------------------------------------------------
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
 
+# ---------------------------------------------------------------
 # OS files
+# ---------------------------------------------------------------
 .DS_Store
+Thumbs.db
+desktop.ini
 
+# ---------------------------------------------------------------
 # Logs
+# ---------------------------------------------------------------
 *.log
+logs/
+**/*.log
+
+# ---------------------------------------------------------------
+# Testing / coverage / type-checker caches
+# ---------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+
+# ---------------------------------------------------------------
+# Jupyter
+# ---------------------------------------------------------------
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------
+# Misc
+# ---------------------------------------------------------------
+*.bak
+*.tmp
+*.orig
